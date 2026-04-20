@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>정신차려 — AI 팩트폭격 코치</title>
+<meta name="description" content="따끔하지만 도움되는 AI 조언. 상황 털어놓고 정신 좀 차려봐.">
+<meta property="og:title" content="정신차려 🔥" />
+<meta property="og:description" content="AI가 따끔하게 현실 직시 시켜드립니다." />
+<meta property="og:type" content="website" />
+<meta name="theme-color" content="#e8300a" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="정신차려" />
+<link rel="manifest" href="/manifest.json" />
+<link rel="apple-touch-icon" href="/icon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red: #e8300a;
+    --red-light: #ff4520;
+    --bg: #0e0c0a;
+    --surface: #16130f;
+    --surface2: #1e1a15;
+    --border: #2a2520;
+    --text: #f0ece4;
+    --muted: #888;
+    --dim: #555;
+  }
+
+  html { font-size: 16px; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* HEADER */
+  header {
+    background: #1a0f0a;
+    border-bottom: 2px solid var(--red);
+    padding: 18px 20px 14px;
+    flex-shrink: 0;
+  }
+
+  .header-title {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 26px;
+    color: #fff;
+  }
+
+  .header-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  .tabs {
+    display: flex;
+    margin-top: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 9px 0;
+    text-align: center;
+    font-size: 13px;
+    cursor: pointer;
+    background: #111;
+    color: var(--muted);
+    border: none;
+    transition: all 0.15s;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+
+  .tab.active { background: var(--red); color: #fff; font-weight: 700; }
+
+  /* PROGRESS */
+  .progress {
+    display: flex;
+    gap: 6px;
+    padding: 16px 20px 0;
+  }
+
+  .pdot {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+
+  .pdot.on { background: var(--red); }
+
+  /* BODY */
+  main { flex: 1; padding: 18px 20px 24px; }
+
+  .label {
+    font-size: 11px;
+    color: var(--red);
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+    padding: 13px 14px;
+    resize: none;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  textarea:focus { border-color: var(--red); }
+  textarea::placeholder { color: #444; }
+
+  .char-count {
+    text-align: right;
+    font-size: 11px;
+    color: #3a3530;
+    margin-top: 4px;
+  }
+
+  /* PHOTO */
+  .photo-zone {
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    background: var(--surface);
+    margin-bottom: 14px;
+  }
+
+  .photo-zone:hover { border-color: var(--red); }
+  .photo-zone.has-img { border-style: solid; border-color: var(--red); padding: 0; overflow: hidden; }
+
+  .photo-zone img { width: 100%; max-height: 220px; object-fit: cover; display: block; }
+  .photo-hint { font-size: 13px; color: var(--muted); }
+  .photo-hint strong { color: var(--red); }
+
+  #file-input { display: none; }
+
+  /* BUTTON */
+  .btn-main {
+    width: 100%;
+    margin-top: 16px;
+    padding: 15px;
+    background: var(--red);
+    color: #fff;
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 19px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.15s;
+  }
+
+  .btn-main:hover:not(:disabled) { background: var(--red-light); transform: scale(1.01); }
+  .btn-main:active:not(:disabled) { transform: scale(0.98); }
+  .btn-main:disabled { background: #2a1a14; color: #5a3a30; cursor: default; }
+
+  .btn-ghost {
+    width: 100%;
+    margin-top: 10px;
+    padding: 11px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-ghost:hover { color: var(--text); border-color: #4a4540; }
+
+  /* AD OVERLAY */
+  #ad-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  #ad-overlay.visible { display: flex; }
+
+  .ad-box {
+    width: min(340px, 90vw);
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .ad-label {
+    background: var(--border);
+    padding: 6px 14px;
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 1px;
+  }
+
+  .ad-content {
+    padding: 28px 20px 24px;
+    text-align: center;
+  }
+
+  .ad-icon { font-size: 36px; margin-bottom: 12px; }
+  .ad-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .ad-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  .ad-timer {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 40px;
+    color: var(--red);
+    margin-top: 4px;
+  }
+
+  .ad-skip {
+    font-size: 12px;
+    color: var(--dim);
+    cursor: pointer;
+    padding: 8px;
+    text-align: center;
+  }
+
+  .ad-skip.ready { color: var(--muted); text-decoration: underline; }
+
+  /* LOADING */
+  #loading {
+    display: none;
+    text-align: center;
+    padding: 40px 0;
+  }
+
+  #loading.visible { display: block; }
+
+  .dots span {
+    display: inline-block;
+    width: 9px; height: 9px;
+    background: var(--red);
+    border-radius: 50%;
+    margin: 0 4px;
+    animation: bounce 1.2s infinite;
+  }
+
+  .dots span:nth-child(2) { animation-delay: .2s; }
+  .dots span:nth-child(3) { animation-delay: .4s; }
+
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: .4; }
+    30% { transform: translateY(-9px); opacity: 1; }
+  }
+
+  .loading-label { font-size: 13px; color: var(--muted); margin-top: 12px; }
+
+  /* QUESTIONS */
+  #step1 { display: none; animation: fadeUp .35s; }
+
+  .ai-bubble {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #c8c0b4;
+  }
+
+  .ai-tag { font-size: 11px; color: var(--red); font-weight: 700; letter-spacing: 1px; margin-bottom: 8px; }
+
+  .q-item { margin-bottom: 16px; }
+  .q-label { font-size: 13px; color: #d8d0c4; font-weight: 500; margin-bottom: 6px; line-height: 1.5; }
+
+  /* RESULT */
+  #step2 { display: none; animation: fadeUp .35s; }
+
+  .result-card {
+    background: var(--surface);
+    border: 2px solid var(--red);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .result-text {
+    font-size: 15px;
+    line-height: 1.9;
+    color: #d8d0c4;
+    white-space: pre-wrap;
+  }
+
+  /* SHARE */
+  .share-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .share-btn {
+    flex: 1;
+    padding: 11px;
+    background: #1a1510;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    text-align: center;
+    transition: all .15s;
+  }
+
+  .share-btn:hover { color: var(--text); border-color: #4a4540; }
+
+  /* DISCLAIMER */
+  .disclaimer {
+    text-align: center;
+    font-size: 11px;
+    color: #333;
+    margin-top: 20px;
+    line-height: 1.7;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* COPY TOAST */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all .3s;
+    pointer-events: none;
+    z-index: 200;
+  }
+
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <div class="header-title">🔥 정신차려</div>
+    <div class="header-sub">따끔하지만 도움되는 AI 팩트폭격</div>
+    <div class="tabs">
+      <button class="tab active" id="tab-text" onclick="setMode('text')">📝 상황 털어놓기</button>
+      <button class="tab" id="tab-photo" onclick="setMode('photo')">📸 사진으로</button>
+    </div>
+  </header>
+
+  <div class="progress">
+    <div class="pdot on" id="pd0"></div>
+    <div class="pdot" id="pd1"></div>
+    <div class="pdot" id="pd2"></div>
+  </div>
+
+  <main>
+
+    <!-- STEP 0 -->
+    <div id="step0">
+
+      <div id="text-area">
+        <div class="label">지금 상황</div>
+        <textarea id="situation" rows="6" maxlength="500"
+          placeholder="지금 어떤 상황인지 털어놔봐.&#10;&#10;예: 친구한테 또 배신당했어. 이번이 세 번째인데 내가 왜 이러나 싶기도 하고..."
+          oninput="onInput()"></textarea>
+        <div class="char-count"><span id="char">0</span>/500</div>
+      </div>
+
+      <div id="photo-area" style="display:none">
+        <div class="photo-zone" id="photo-zone" onclick="document.getElementById('file-input').click()">
+          <div class="photo-hint" id="photo-hint">
+            <div style="font-size:32px;margin-bottom:8px">📷</div>
+            <strong>사진 선택하기</strong><br>터치하거나 드래그
+          </div>
+          <img id="preview" style="display:none" alt="미리보기" />
+        </div>
+        <input type="file" id="file-input" accept="image/*" onchange="onPhoto(this)" />
+        <div class="label" style="margin-top:14px">한마디 더 (선택)</div>
+        <textarea id="caption" rows="3" maxlength="200"
+          placeholder="ex: 오늘 왜인지 모르게 자꾸 거울만 봤어..."
+          oninput="onInput()"></textarea>
+      </div>
+
+      <button class="btn-main" id="go-btn" onclick="start()" disabled>🔥 정신 좀 들게 해줘</button>
+      <div class="disclaimer">AI가 질문 몇 개 하고 → 따끔한 조언까지 이어져요<br>본인 상황에만 사용해주세요</div>
+    </div>
+
+    <!-- LOADING -->
+    <div id="loading">
+      <div class="dots"><span></span><span></span><span></span></div>
+      <div class="loading-label" id="loading-label">상황 파악 중...</div>
+    </div>
+
+    <!-- STEP 1 -->
+    <div id="step1">
+      <div class="ai-bubble">
+        <div class="ai-tag">💬 잠깐, 먼저 물어볼게</div>
+        <div id="intro-text"></div>
+      </div>
+      <div id="q-list"></div>
+      <button class="btn-main" onclick="submit()">답했어, 이제 욕해줘 →</button>
+    </div>
+
+    <!-- STEP 2 -->
+    <div id="step2">
+      <div class="label">🔥 솔직한 한마디</div>
+      <div class="result-card">
+        <div class="result-text" id="result-text"></div>
+      </div>
+      <div class="share-row">
+        <button class="share-btn" onclick="copyLink()">🔗 링크 복사</button>
+        <button class="share-btn" onclick="shareKakao()">💬 카카오 공유</button>
+      </div>
+      <button class="btn-ghost" onclick="restart()">처음부터 다시</button>
+    </div>
+
+  </main>
+</div>
+
+<!-- AD OVERLAY -->
+<div id="ad-overlay">
+  <div class="ad-box">
+    <div class="ad-label">AD · 광고</div>
+    <div class="ad-content">
+      <div class="ad-icon">📢</div>
+      <div class="ad-title">광고 지면</div>
+      <div class="ad-desc">이 자리에 광고가 들어갑니다<br>AdMob 연동 후 실제 광고로 교체</div>
+      <div class="ad-timer" id="ad-count">5</div>
+    </div>
+  </div>
+  <div class="ad-skip" id="ad-skip" onclick="skipAd()">잠시만 기다려주세요...</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '/api/chat';
+let mode = 'text';
+let imgBase64 = null, imgType = null;
+let questions = [], situation = '';
+let adTimer = null, adCallback = null, adCanSkip = false;
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('tab-text').classList.toggle('active', m === 'text');
+  document.getElementById('tab-photo').classList.toggle('active', m === 'photo');
+  document.getElementById('text-area').style.display = m === 'text' ? 'block' : 'none';
+  document.getElementById('photo-area').style.display = m === 'photo' ? 'block' : 'none';
+  check();
+}
+
+function onInput() {
+  const t = document.getElementById('situation').value;
+  document.getElementById('char').textContent = t.length;
+  check();
+}
+
+function check() {
+  const btn = document.getElementById('go-btn');
+  if (mode === 'text') btn.disabled = document.getElementById('situation').value.trim().length < 10;
+  else btn.disabled = !imgBase64;
+}
+
+function onPhoto(input) {
+  const file = input.files[0]; if (!file) return;
+  imgType = file.type || 'image/jpeg';
+  const r = new FileReader();
+  r.onload = e => {
+    imgBase64 = e.target.result.split(',')[1];
+    const img = document.getElementById('preview');
+    img.src = e.target.result; img.style.display = 'block';
+    document.getElementById('photo-hint').style.display = 'none';
+    document.getElementById('photo-zone').classList.add('has-img');
+    check();
+  };
+  r.readAsDataURL(file);
+}
+
+function setProgress(n) {
+  for (let i = 0; i < 3; i++)
+    document.getElementById('pd' + i).classList.toggle('on', i <= n);
+}
+
+function show(id) {
+  ['step0','loading','step1','step2'].forEach(s =>
+    document.getElementById(s).style.display = s === id ? 'block' : 'none');
+}
+
+function showAd(seconds, cb) {
+  adCallback = cb; adCanSkip = false;
+  const overlay = document.getElementById('ad-overlay');
+  const count = document.getElementById('ad-count');
+  const skip = document.getElementById('ad-skip');
+  let t = seconds;
+  count.textContent = t;
+  skip.textContent = '잠시만 기다려주세요...';
+  skip.classList.remove('ready');
+  overlay.classList.add('visible');
+  adTimer = setInterval(() => {
+    t--;
+    count.textContent = t;
+    if (t <= 0) {
+      clearInterval(adTimer);
+      skip.textContent = '✕ 닫고 결과 보기';
+      skip.classList.add('ready');
+      adCanSkip = true;
+    }
+  }, 1000);
+}
+
+function skipAd() {
+  if (!adCanSkip) return;
+  clearInterval(adTimer);
+  document.getElementById('ad-overlay').classList.remove('visible');
+  if (adCallback) adCallback();
+}
+
+async function callAPI(body) {
+  const res = await fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+
+async function start() {
+  situation = mode === 'text'
+    ? document.getElementById('situation').value.trim()
+    : (document.getElementById('caption').value.trim() || '(사진으로 상황 전달)');
+
+  show('loading');
+  document.getElementById('loading-label').textContent = '상황 파악 중...';
+  setProgress(1);
+
+  const content = [];
+  if (mode === 'photo' && imgBase64)
+    content.push({ type: 'image', source: { type: 'base64', media_type: imgType, data: imgBase64 } });
+  content.push({ type: 'text', text: mode === 'text' ? situation : `사진과 함께: ${situation}` });
+
+  try {
+    const data = await callAPI({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 500,
+      system: `당신은 날카로운 심리 코치입니다. 사용자 상황을 듣고 본질적 문제를 파악하기 위해 3개의 핵심 질문을 만드세요.
+질문은 직접적이고 핵심을 찌르되, 사용자가 외면하고 싶은 부분을 건드리세요.
+반드시 아래 JSON 형식만으로 응답하세요:
+{"intro":"상황 요약 한 문장(20자 이내, 직설 톤)","questions":["질문1","질문2","질문3"]}`,
+      messages: [{ role: 'user', content }]
+    });
+
+    const raw = data.content?.map(b => b.text || '').join('') || '{}';
+    const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    questions = parsed.questions || [];
+    const intro = parsed.intro || '알겠어. 좀 더 파볼게.';
+
+    show('loading');
+    showAd(5, () => {
+      document.getElementById('intro-text').textContent = intro;
+      const list = document.getElementById('q-list');
+      list.innerHTML = '';
+      questions.forEach((q, i) => {
+        list.innerHTML += `<div class="q-item">
+          <div class="q-label">Q${i+1}. ${q}</div>
+          <textarea id="q${i}" rows="2" placeholder="솔직하게 써봐..."></textarea>
+        </div>`;
+      });
+      show('step1');
+    });
+  } catch (e) {
+    questions = ['이 상황이 처음이야, 아니면 반복되는 패턴이야?', '솔직히, 네 잘못은 없었어?', '원하는 결과가 뭐야?'];
+    show('loading');
+    showAd(5, () => {
+      document.getElementById('intro-text').textContent = '알겠어. 좀 더 파볼게.';
+      const list = document.getElementById('q-list');
+      list.innerHTML = '';
+      questions.forEach((q, i) => {
+        list.innerHTML += `<div class="q-item">
+          <div class="q-label">Q${i+1}. ${q}</div>
+          <textarea id="q${i}" rows="2" placeholder="솔직하게 써봐..."></textarea>
+        </div>`;
+      });
+      show('step1');
+    });
+  }
+}
+
+async function submit() {
+  const answers = questions.map((q, i) =>
+    `Q: ${q}\nA: ${(document.getElementById('q'+i)?.value||'').trim()||'(답 없음)'}`
+  ).join('\n\n');
+
+  show('loading');
+  document.getElementById('loading-label').textContent = '조언 준비 중...';
+  setProgress(2);
+
+  const content2 = [];
+  if (mode === 'photo' && imgBase64)
+    content2.push({ type: 'image', source: { type: 'base64', media_type: imgType, data: imgBase64 } });
+  content2.push({ type: 'text', text: `원래 상황:\n${situation}\n\n질문과 답변:\n${answers}` });
+
+  try {
+    const data = await callAPI({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 600,
+      system: `당신은 팩트 폭격 코치입니다. 직설적이되 진심으로 도움이 되는 조언을 해주세요.
+- "야", "진짜", "미치겠네", "어이없어" 같은 직설적 감탄사 자연스럽게 섞기
+- 문제 핵심을 정확히 짚고, 구체적 행동 조언 1~2개 포함
+- 마지막 한 줄은 짧고 강한 응원
+- 전체 200~300자, 단락 2~3개
+- 한국어만 사용`,
+      messages: [{ role: 'user', content: content2 }]
+    });
+
+    const text = data.content?.map(b => b.text || '').join('') || '말문이 막혔어. 다시 해봐.';
+
+    showAd(5, () => {
+      document.getElementById('result-text').textContent = text;
+      show('step2');
+    });
+  } catch (e) {
+    showAd(5, () => {
+      document.getElementById('result-text').textContent = '연결이 안 됐어. 다시 눌러봐.';
+      show('step2');
+    });
+  }
+}
+
+function restart() {
+  imgBase64 = null; imgType = null; questions = []; situation = '';
+  document.getElementById('situation').value = '';
+  document.getElementById('caption').value = '';
+  document.getElementById('char').textContent = '0';
+  document.getElementById('preview').style.display = 'none';
+  document.getElementById('photo-hint').style.display = 'block';
+  document.getElementById('photo-zone').classList.remove('has-img');
+  document.getElementById('file-input').value = '';
+  document.getElementById('go-btn').disabled = true;
+  setProgress(0);
+  setMode('text');
+  show('step0');
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(location.href).then(() => toast('링크 복사됐어 👍'));
+}
+
+function shareKakao() {
+  const url = `https://sharer.kakao.com/talk/friends/picker/link?url=${encodeURIComponent(location.href)}`;
+  window.open(url, '_blank', 'width=500,height=600');
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+document.getElementById('photo-zone').addEventListener('dragover', e => {
+  e.preventDefault();
+  document.getElementById('photo-zone').style.borderColor = 'var(--red)';
+});
+document.getElementById('photo-zone').addEventListener('drop', e => {
+  e.preventDefault();
+  const f = e.dataTransfer.files[0];
+  if (f?.type.startsWith('image/')) {
+    const dt = new DataTransfer(); dt.items.add(f);
+    document.getElementById('file-input').files = dt.files;
+    onPhoto(document.getElementById('file-input'));
+  }
+});
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}
+</script>
+</body>
+</html>
